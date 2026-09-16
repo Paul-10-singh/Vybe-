@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /resume - resume playback.
  */

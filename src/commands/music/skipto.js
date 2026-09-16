@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /skipto - jump straight to a queue position (skipping everything before it).
  */

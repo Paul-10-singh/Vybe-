@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /stop - stop playback and clear the queue.
  */

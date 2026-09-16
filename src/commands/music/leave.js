@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /disconnect - disconnect the bot from voice (admin-only).
  */

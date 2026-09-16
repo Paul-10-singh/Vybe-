@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * Persistent per-server playlist storage (data/playlists.json).
  */

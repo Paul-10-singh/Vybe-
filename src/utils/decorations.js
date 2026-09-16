@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * Central decoration system — Midnight Blue theme.
  * Single source of truth for all embed styling, brand colors, footers,

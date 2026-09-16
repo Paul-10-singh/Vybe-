@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /play - multi-platform playback (YouTube, Spotify, SoundCloud, Apple Music,
  * Deezer, direct URLs, playlists/albums, or plain search text).

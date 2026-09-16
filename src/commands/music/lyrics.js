@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /lyrics - fetch lyrics for the currently playing track.
  * Uses @flytri/lyrics-finder (Genius public endpoint, no API key).

@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /loop - cycle the repeat mode (Off -> Track -> Queue -> Off).
  */

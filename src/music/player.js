@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * Music engine built on play-dl + @discordjs/voice + ffmpeg-static.
  *

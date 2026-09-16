@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /spotify - search & play Spotify via the Spotify extractor (bridged to a
  * streamable source automatically by discord-player).

@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  */
 const { EmbedBuilder, MessageFlags } = require('discord.js');
 const { BRAND, footer, MODULE_COLORS } = require('./decorations');

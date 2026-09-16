@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * Small formatting helpers shared by the music commands (avoid the main
  * helpers.js circular dependency with decorations).

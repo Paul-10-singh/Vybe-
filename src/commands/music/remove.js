@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /remove - remove a specific track from the queue by its position.
  * The current (now playing) track is position 1.

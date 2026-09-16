@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /autoplay - toggle autoplay (keeps similar tracks playing forever).
  */

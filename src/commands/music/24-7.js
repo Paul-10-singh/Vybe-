@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /24-7 - 24/7 mode: the bot connects and stays sitting in the voice channel
  * (never auto-leaves). Running /24-7 once enables it; running it again while

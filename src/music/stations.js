@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * Tamil radio station registry for /radio (24/7 live streaming).
  * URLs were verified live on 2026-09-09 (HTTP 200 + real audio frames).

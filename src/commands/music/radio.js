@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /radio - play a Tamil radio station 24/7 (stays in the voice channel,
  * re-plays the same live stream on any hiccup so it never drops). Running the

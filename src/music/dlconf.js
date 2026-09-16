@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * Loads play-dl credentials (YouTube cookies, optional Spotify & SoundCloud
  * tokens) so streaming works. YouTube started gating stream URL delivery on

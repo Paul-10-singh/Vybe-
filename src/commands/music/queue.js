@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /queue - show the music queue, now playing, and previous tracks, in the
  * Pro build's style: dotted lines, prev/current/upcoming sections and

@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /fx - apply/clear stackable audio filters (bassboost, nightcore, vaporwave, ...).
  */

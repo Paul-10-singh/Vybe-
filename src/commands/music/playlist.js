@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * /playlist - per-user persistent playlists (MongoDB by default, local fallback).
  * Every user has a default **Liked** playlist ("liked"/"like" reserved by the ❤️

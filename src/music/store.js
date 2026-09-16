@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * Per-user playlist store: MongoDB by default, local fallback when the DB is
  * unreachable.

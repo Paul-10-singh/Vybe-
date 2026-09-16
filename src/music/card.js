@@ -1,6 +1,6 @@
 /*
  * Peace✘ - Discord Bot
- * Developed by Smith.Code
+ * Developed by ACEtnc
  *
  * Now-playing image card (ported from the Peace✘ᴾᴿᴼ custom UI).
  * Renders a generated PNG card showing the current track artwork, title,
