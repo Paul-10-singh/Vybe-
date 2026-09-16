@@ -1,0 +1,8 @@
+node_modules/
+.env
+cookies.json
+cookies.txt
+*.log
+logs_test_*.txt
+data/
+.data/
