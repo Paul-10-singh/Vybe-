@@ -34,7 +34,14 @@ if (bundledFfmpeg?.path) {
 }
 
 const prism = require('prism-media');
-const ytDlp = require('yt-dlp-exec');
+const ytDlp = (() => {
+  const fs = require('fs');
+  const updated = path.join(path.resolve(__dirname, '..', '..'), 'data', 'yt-dlp_linux');
+  if (process.platform !== 'win32' && fs.existsSync(updated)) {
+    return require('yt-dlp-exec').create(updated);
+  }
+  return require('yt-dlp-exec');
+})();
 const {
   joinVoiceChannel,
   createAudioPlayer,

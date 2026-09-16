@@ -7,4 +7,12 @@ try {
   }
 } catch {}
 
-require('./src/index.js');
+function start() {
+  require('./src/index.js');
+}
+
+if (process.platform !== 'win32') {
+  require('./scripts/ensureYtDlp.js')().catch(() => {}).finally(start);
+} else {
+  start();
+}
