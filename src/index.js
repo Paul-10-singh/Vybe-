@@ -31,6 +31,8 @@ client.music = new MusicManager(client);
 // Safety net: a single failed API call / reply must never crash the bot.
 client.on('error', (err) => console.error(`${ANSI.red}[PeaceX] [×] Client error: ${err.message}${ANSI.reset}`));
 process.on('unhandledRejection', (reason) => {
+  const msg = reason instanceof Error ? reason.message : String(reason);
+  if (/Got \d{3} from the request/.test(msg)) return;
   console.error(`${ANSI.red}[PeaceX] [×] Unhandled rejection:${ANSI.reset}`, reason);
 });
 process.on('uncaughtException', (err) => {

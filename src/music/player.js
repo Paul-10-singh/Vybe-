@@ -102,6 +102,14 @@ const FILTERS = {
 
 const QUEUE_LIMIT = 500;
 
+function withTimeout(promise, ms, message) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message || `Timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 class MusicManager extends EventEmitter {
   constructor(client = null) {
     super();
@@ -323,6 +331,8 @@ class MusicManager extends EventEmitter {
       output: path.join(dir, `${prefix}.%(ext)s`),
       noWarnings: true,
       noProgress: true,
+      noCheckFormats: true,
+      socketTimeout: 15000,
     };
     const cookiesFile = path.join(path.resolve(__dirname, '..', '..'), 'cookies.txt');
     if (fs.existsSync(cookiesFile)) flags.cookies = cookiesFile;
@@ -354,13 +364,15 @@ class MusicManager extends EventEmitter {
       // first only doubles the requests on an IP that YouTube is already
       // rate-limiting (429). play-dl remains as a fallback only.
       try {
-        const data = await ytDlp(url, {
+        const data = await withTimeout(ytDlp(url, {
           noWarnings: true,
           noProgress: true,
           quiet: true,
+          noCheckFormats: true,
+          socketTimeout: 15000,
           dumpSingleJson: true,
           ...extraFlags,
-        }, { timeout: 30000 });
+        }, { timeout: 15000 }), 20000, 'yt-dlp resolution timed out');
         const thumbs = Array.isArray(data?.thumbnails) ? data.thumbnails : [];
         return {
           url: data?.id ? `https://www.youtube.com/watch?v=${data.id}` : url,
@@ -372,7 +384,7 @@ class MusicManager extends EventEmitter {
         };
       } catch (err) {
         try {
-          const info = await playdl.video_info(url);
+          const info = await withTimeout(playdl.video_info(url), 8000, 'play-dl timed out');
           return this.videoMeta(info.video_details);
         } catch (err2) {
           throw new Error(`Could not resolve YouTube video: ${err2.message}`);
@@ -649,7 +661,7 @@ class MusicManager extends EventEmitter {
     // makes silent audio failures undiagnosable. noWarnings + noProgress are
     // enough to reduce noise without hiding actual errors.
     // 'ba' strictly requests best audio only. Do not fallback to 'b' (video).
-    const flags = { noWarnings: true, noProgress: true, format: 'ba', output: '-' };
+    const flags = { noWarnings: true, noProgress: true, noCheckFormats: true, socketTimeout: 15000, format: 'ba', output: '-' };
     const cookiesFile = path.join(path.resolve(__dirname, '..', '..'), 'cookies.txt');
     if (require('fs').existsSync(cookiesFile)) flags.cookies = cookiesFile;
     if (opts.seekSeconds) flags.downloadSections = `*${opts.seekSeconds}-`;
@@ -663,7 +675,7 @@ class MusicManager extends EventEmitter {
    */
   async ytdlpSearch(query, limit = 5) {
     const searchQuery = `ytsearch${Math.max(1, limit)}:${String(query || '').trim()}`;
-    const flags = { noWarnings: true, noProgress: true, quiet: true, flatPlaylist: true, dumpSingleJson: true };
+    const flags = { noWarnings: true, noProgress: true, quiet: true, flatPlaylist: true, noCheckFormats: true, socketTimeout: 15000, dumpSingleJson: true };
     const cookiesFile = path.join(path.resolve(__dirname, '..', '..'), 'cookies.txt');
     if (require('fs').existsSync(cookiesFile)) flags.cookies = cookiesFile;
     const tracks = await ytDlp(searchQuery, flags, { timeout: 20000 }).then((data) => (data?.entries || []).map((e) => {
