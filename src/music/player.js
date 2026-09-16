@@ -333,6 +333,7 @@ class MusicManager extends EventEmitter {
       noProgress: true,
       noCheckFormats: true,
       socketTimeout: 15000,
+      'extractor-args': 'youtube:player_client=web_safari,tv,android,ios',
     };
     const cookiesFile = path.join(path.resolve(__dirname, '..', '..'), 'cookies.txt');
     if (fs.existsSync(cookiesFile)) flags.cookies = cookiesFile;
@@ -371,6 +372,7 @@ class MusicManager extends EventEmitter {
           noCheckFormats: true,
           socketTimeout: 15000,
           dumpSingleJson: true,
+          'extractor-args': 'youtube:player_client=web_safari,tv,android,ios',
           ...extraFlags,
         }, { timeout: 15000 }), 20000, 'yt-dlp resolution timed out');
         const thumbs = Array.isArray(data?.thumbnails) ? data.thumbnails : [];
@@ -387,7 +389,10 @@ class MusicManager extends EventEmitter {
           const info = await withTimeout(playdl.video_info(url), 8000, 'play-dl timed out');
           return this.videoMeta(info.video_details);
         } catch (err2) {
-          throw new Error(`Could not resolve YouTube video: ${err2.message}`);
+          const gated = /bot|Sign in|confirm you|GOT_|action required/i.test(err2.message);
+          throw new Error(gated
+            ? 'YouTube blocked this request (yes, even for audio). Add your YouTube login to cookies.json, or use a SoundCloud link.'
+            : `Could not resolve YouTube video: ${err2.message}`);
         }
       }
     }
@@ -661,7 +666,7 @@ class MusicManager extends EventEmitter {
     // makes silent audio failures undiagnosable. noWarnings + noProgress are
     // enough to reduce noise without hiding actual errors.
     // 'ba' strictly requests best audio only. Do not fallback to 'b' (video).
-    const flags = { noWarnings: true, noProgress: true, noCheckFormats: true, socketTimeout: 15000, format: 'ba', output: '-' };
+    const flags = { noWarnings: true, noProgress: true, noCheckFormats: true, socketTimeout: 15000, format: 'ba', output: '-', 'extractor-args': 'youtube:player_client=web_safari,tv,android,ios' };
     const cookiesFile = path.join(path.resolve(__dirname, '..', '..'), 'cookies.txt');
     if (require('fs').existsSync(cookiesFile)) flags.cookies = cookiesFile;
     if (opts.seekSeconds) flags.downloadSections = `*${opts.seekSeconds}-`;
@@ -675,7 +680,7 @@ class MusicManager extends EventEmitter {
    */
   async ytdlpSearch(query, limit = 5) {
     const searchQuery = `ytsearch${Math.max(1, limit)}:${String(query || '').trim()}`;
-    const flags = { noWarnings: true, noProgress: true, quiet: true, flatPlaylist: true, noCheckFormats: true, socketTimeout: 15000, dumpSingleJson: true };
+    const flags = { noWarnings: true, noProgress: true, quiet: true, flatPlaylist: true, noCheckFormats: true, socketTimeout: 15000, dumpSingleJson: true, 'extractor-args': 'youtube:player_client=web_safari,tv,android,ios' };
     const cookiesFile = path.join(path.resolve(__dirname, '..', '..'), 'cookies.txt');
     if (require('fs').existsSync(cookiesFile)) flags.cookies = cookiesFile;
     const tracks = await ytDlp(searchQuery, flags, { timeout: 20000 }).then((data) => (data?.entries || []).map((e) => {
