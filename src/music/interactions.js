@@ -81,7 +81,7 @@ async function enqueuePick(interaction, client, pending) {
     const wasPlaying = Boolean(existingQueue?.currentTrack);
     await withTimeout(
       client.music.play(interaction.guild, channel, track.url, interaction.user.displayName || interaction.user.username, interaction.user.id),
-      25000,
+      40000,
       'Playback setup timed out. Please try again.'
     );
     const queue = client.music.getQueue(interaction.guild.id);

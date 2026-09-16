@@ -345,22 +345,22 @@ class MusicManager extends EventEmitter {
       throw new Error('That is a Discord invite, not a playable song. Use a song name or a YouTube/SoundCloud URL.');
     }
     if (u.includes('youtube.com') || u.includes('youtu.be')) {
+      const cookiesFile = path.join(path.resolve(__dirname, '..', '..'), 'cookies.txt');
+      const extraFlags = {};
+      if (require('fs').existsSync(cookiesFile)) extraFlags.cookies = cookiesFile;
+
+      // yt-dlp is the primary resolver: it handles YouTube's anti-bot/PO-token
+      // requirements and is the same engine we stream through. Calling play-dl
+      // first only doubles the requests on an IP that YouTube is already
+      // rate-limiting (429). play-dl remains as a fallback only.
       try {
-        const info = await playdl.video_info(url);
-        return this.videoMeta(info.video_details);
-      } catch (err) {
-        const cookiesFile = path.join(path.resolve(__dirname, '..', '..'), 'cookies.txt');
-        const extraFlags = {};
-        if (require('fs').existsSync(cookiesFile)) extraFlags.cookies = cookiesFile;
         const data = await ytDlp(url, {
           noWarnings: true,
           noProgress: true,
           quiet: true,
           dumpSingleJson: true,
           ...extraFlags,
-        }, { timeout: 30000 }).catch((e) => {
-          throw new Error(`Could not resolve YouTube video: ${e.message}`);
-        });
+        }, { timeout: 30000 });
         const thumbs = Array.isArray(data?.thumbnails) ? data.thumbnails : [];
         return {
           url: data?.id ? `https://www.youtube.com/watch?v=${data.id}` : url,
@@ -370,6 +370,13 @@ class MusicManager extends EventEmitter {
           thumbnail: thumbs[thumbs.length - 1]?.url || null,
           source: 'youtube',
         };
+      } catch (err) {
+        try {
+          const info = await playdl.video_info(url);
+          return this.videoMeta(info.video_details);
+        } catch (err2) {
+          throw new Error(`Could not resolve YouTube video: ${err2.message}`);
+        }
       }
     }
     if (u.includes('soundcloud.com')) {

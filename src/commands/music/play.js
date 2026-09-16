@@ -65,7 +65,7 @@ module.exports = {
         const wasPlaying = Boolean(existingQueue?.currentTrack);
         const { queue, track } = await withTimeout(
           client.music.play(interaction.guild, vc.channel, query.trim(), displayName, userId),
-          25000,
+          40000,
           'Playback setup timed out. Please try again.'
         );
         const first = queue?.currentTrack ?? track;
