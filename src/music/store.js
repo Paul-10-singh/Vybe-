@@ -31,32 +31,44 @@ const RESERVED = new Set(['liked', 'like']);
 const PLAY_LIMIT = 500;
 
 // ── Fallback: liked songs -> SQLite (keeps old behavior alive) ──────────
-const Database = require('better-sqlite3');
 const DB_PATH = path.join(DATA_DIR, 'music.db');
-const sqlite = new Database(DB_PATH);
-sqlite.pragma('journal_mode = WAL');
-sqlite.exec(`
-  CREATE TABLE IF NOT EXISTS users (user_id TEXT PRIMARY KEY);
-  CREATE TABLE IF NOT EXISTS playlist_tracks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,
-    title TEXT NOT NULL,
-    url TEXT NOT NULL,
-    duration TEXT,
-    added_at INTEGER NOT NULL,
-    UNIQUE(user_id, url)
+let sqlite = null;
+let sqlInsertUser = null;
+let sqlInsert = null;
+let sqlRemoveUrl = null;
+let sqlRemoveId = null;
+let sqlAll = null;
+let sqlHas = null;
+try {
+  const Database = require('better-sqlite3');
+  sqlite = new Database(DB_PATH);
+  sqlite.pragma('journal_mode = WAL');
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS users (user_id TEXT PRIMARY KEY);
+    CREATE TABLE IF NOT EXISTS playlist_tracks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      url TEXT NOT NULL,
+      duration TEXT,
+      added_at INTEGER NOT NULL,
+      UNIQUE(user_id, url)
+    );
+    CREATE INDEX IF NOT EXISTS idx_pl_user ON playlist_tracks(user_id);
+  `);
+  sqlInsertUser = sqlite.prepare('INSERT OR IGNORE INTO users (user_id) VALUES (?)');
+  sqlInsert = sqlite.prepare(
+    `INSERT OR IGNORE INTO playlist_tracks (user_id, title, url, duration, added_at)
+     VALUES (@user_id, @title, @url, @duration, @added_at)`
   );
-  CREATE INDEX IF NOT EXISTS idx_pl_user ON playlist_tracks(user_id);
-`);
-const sqlInsertUser = sqlite.prepare('INSERT OR IGNORE INTO users (user_id) VALUES (?)');
-const sqlInsert = sqlite.prepare(
-  `INSERT OR IGNORE INTO playlist_tracks (user_id, title, url, duration, added_at)
-   VALUES (@user_id, @title, @url, @duration, @added_at)`
-);
-const sqlRemoveUrl = sqlite.prepare('DELETE FROM playlist_tracks WHERE user_id = ? AND url = ?');
-const sqlRemoveId = sqlite.prepare('DELETE FROM playlist_tracks WHERE user_id = ? AND id = ?');
-const sqlAll = sqlite.prepare('SELECT id, title, url, duration, added_at FROM playlist_tracks WHERE user_id = ? ORDER BY id ASC');
-const sqlHas = sqlite.prepare('SELECT 1 FROM playlist_tracks WHERE user_id = ? AND url = ?');
+  sqlRemoveUrl = sqlite.prepare('DELETE FROM playlist_tracks WHERE user_id = ? AND url = ?');
+  sqlRemoveId = sqlite.prepare('DELETE FROM playlist_tracks WHERE user_id = ? AND id = ?');
+  sqlAll = sqlite.prepare('SELECT id, title, url, duration, added_at FROM playlist_tracks WHERE user_id = ? ORDER BY id ASC');
+  sqlHas = sqlite.prepare('SELECT 1 FROM playlist_tracks WHERE user_id = ? AND url = ?');
+} catch (err) {
+  sqlite = null;
+  console.warn(`[PeaceX] [store] SQLite binding unavailable (${err.message}) — using JSON file for liked tracks.`);
+}
 
 // ── Fallback: custom playlists -> JSON file ─────────────────────────────
 const FALLBACK_FILE = path.join(DATA_DIR, 'userPlaylists.json');
@@ -64,6 +76,11 @@ if (!fs.existsSync(FALLBACK_FILE)) fs.writeFileSync(FALLBACK_FILE, '{}', 'utf8')
 let fbCache = JSON.parse(fs.readFileSync(FALLBACK_FILE, 'utf8'));
 function fbPersist() { fs.writeFileSync(FALLBACK_FILE, JSON.stringify(fbCache, null, 2), 'utf8'); }
 function fbUser(userId) { if (!fbCache[userId]) fbCache[userId] = {}; return fbCache[userId]; }
+function fbLiked(userId) {
+  const store = fbUser(String(userId));
+  if (!store[LIKED] || !Array.isArray(store[LIKED].tracks)) store[LIKED] = { name: LIKED, label: 'Liked', tracks: [] };
+  return store[LIKED];
+}
 
 // ── MongoDB (lazy, never blocks startup) ────────────────────────────────
 const MONGO_URI = (process.env.MONGO_URI && process.env.MONGO_URI.trim()) || 'mongodb://127.0.0.1:27017';
@@ -205,32 +222,58 @@ async function mRemovePlaylist(userId, name) {
 
 // ── Fallback helpers ────────────────────────────────────────────────────
 function fbAddTrack(userId, track) {
-  sqlInsertUser.run(String(userId));
+  const u = String(userId);
   const url = String(track.url || '');
   if (!url) return { ok: false, error: 'missing url' };
-  const dup = !!sqlHas.get(String(userId), url);
-  const info = sqlInsert.run({
-    user_id: String(userId),
-    title: String(track.title || 'Untitled'),
-    url,
-    duration: track.duration ? String(track.duration) : null,
-    added_at: Date.now(),
-  });
-  return { ok: info.changes > 0, duplicate: dup };
+  if (sqlite) {
+    sqlInsertUser.run(u);
+    const dup = !!sqlHas.get(u, url);
+    const info = sqlInsert.run({
+      user_id: u,
+      title: String(track.title || 'Untitled'),
+      url,
+      duration: track.duration ? String(track.duration) : null,
+      added_at: Date.now(),
+    });
+    return { ok: info.changes > 0, duplicate: dup };
+  }
+  const list = fbLiked(u).tracks;
+  if (list.some((t) => t.url === url)) return { ok: true, duplicate: true, created: false };
+  if (list.length >= PLAY_LIMIT) return { ok: false, error: 'limit' };
+  list.push({ title: String(track.title || 'Untitled'), url, duration: track.duration ? String(track.duration) : null, addedAt: Date.now() });
+  fbPersist();
+  return { ok: true, duplicate: false, created: true };
 }
 
 function fbRemoveTrack(userId, ref) {
   const u = String(userId);
-  if (isFinite(ref)) {
-    const rows = sqlAll.all(u);
-    const target = rows[Number(ref) - 1];
-    if (!target) return 0;
-    return sqlRemoveId.run(u, target.id).changes;
+  if (sqlite) {
+    if (isFinite(ref)) {
+      const rows = sqlAll.all(u);
+      const target = rows[Number(ref) - 1];
+      if (!target) return 0;
+      return sqlRemoveId.run(u, target.id).changes;
+    }
+    return sqlRemoveUrl.run(u, String(ref)).changes;
   }
-  return sqlRemoveUrl.run(u, String(ref)).changes;
+  const list = fbLiked(u).tracks;
+  if (isFinite(ref) && ref > 0) {
+    if (ref > list.length) return 0;
+    list.splice(Number(ref) - 1, 1);
+  } else {
+    const i = list.findIndex((t) => t.url === String(ref));
+    if (i === -1) return 0;
+    list.splice(i, 1);
+  }
+  fbPersist();
+  return 1;
 }
 
-function fbList(userId) { sqlInsertUser.run(String(userId)); return sqlAll.all(String(userId)); }
+function fbList(userId) {
+  const u = String(userId);
+  if (sqlite) { sqlInsertUser.run(u); return sqlAll.all(u); }
+  return fbLiked(u).tracks.map((t, i) => ({ id: i + 1, title: t.title, url: t.url, duration: t.duration, added_at: t.addedAt }));
+}
 
 function fbUpsertPlaylist(userId, name, label) {
   const store = fbUser(String(userId));
@@ -269,7 +312,7 @@ function fbListTracks(userId, name) {
 
 function fbListPlaylists(userId) {
   const store = fbUser(String(userId));
-  const liked = sqlAll.all(String(userId)).length;
+  const liked = sqlite ? sqlAll.all(String(userId)).length : (fbLiked(String(userId)).tracks || []).length;
   const out = [{ name: LIKED, label: 'Liked', tracks: liked, isDefault: true, created: 0 }];
   for (const p of Object.values(store)) {
     out.push({ name: p.name, label: p.label || p.name, tracks: (p.tracks || []).length, isDefault: false, created: p.created || 0 });
