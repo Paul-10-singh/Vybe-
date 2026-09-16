@@ -338,10 +338,32 @@ class MusicManager extends EventEmitter {
       throw new Error('That is a Discord invite, not a playable song. Use a song name or a YouTube/SoundCloud URL.');
     }
     if (u.includes('youtube.com') || u.includes('youtu.be')) {
-      const info = await playdl.video_info(url).catch((e) => {
-        throw new Error(`Could not resolve YouTube video: ${e.message}`);
-      });
-      return this.videoMeta(info.video_details);
+      try {
+        const info = await playdl.video_info(url);
+        return this.videoMeta(info.video_details);
+      } catch (err) {
+        const cookiesFile = path.join(path.resolve(__dirname, '..', '..'), 'cookies.txt');
+        const extraFlags = {};
+        if (require('fs').existsSync(cookiesFile)) extraFlags.cookies = cookiesFile;
+        const data = await ytDlp(url, {
+          noWarnings: true,
+          noProgress: true,
+          quiet: true,
+          dumpSingleJson: true,
+          ...extraFlags,
+        }, { timeout: 30000 }).catch((e) => {
+          throw new Error(`Could not resolve YouTube video: ${e.message}`);
+        });
+        const thumbs = Array.isArray(data?.thumbnails) ? data.thumbnails : [];
+        return {
+          url: data?.id ? `https://www.youtube.com/watch?v=${data.id}` : url,
+          title: data?.title || 'Untitled',
+          author: data?.uploader || data?.channel || null,
+          durationMS: data?.duration ? Math.round(Number(data.duration) * 1000) : 0,
+          thumbnail: thumbs[thumbs.length - 1]?.url || null,
+          source: 'youtube',
+        };
+      }
     }
     if (u.includes('soundcloud.com')) {
       const data = await playdl.soundcloud(url).catch(() => null);
