@@ -1,15 +1,23 @@
 /*
- * Peace music - Command registration.
+ * Peace✘ - Discord Bot
+ * Developed by ACEtnc
  *
- * THE only entry point for registering slash commands. Global (single scope)
- * by default; use --guild-only for instant push to the two camp guilds.
+ * Command registration — THE only entry point for registering slash commands.
  *
- * Flags:
- *   --guild-only    push ONLY to camp guilds (instant but shows temporary
- *                   duplicates next to the global copy until the next deploy).
- *   --pure-global   default single-scope flow.
+ * DEFAULT MODE: guild-scope (instant, single-scope, no duplicates).
+ *   - clears GLOBAL commands (so they can never shadow the guild copy)
+ *   - pushes to the camp guilds + DEV_GUILD_ID (if set)
+ *   - flags --guild / --guild-only force this mode (safe no-op)
  *
- * Run:  npm run deploy [-- --guild-only]
+ * OPT-IN GLOBAL MODE (--global / --pure-global):
+ *   - pushes GLOBAL commands (up to 1h to appear) and wipes guild-scoped
+ *     copies across every guild the bot shares. Warning: running this while
+ *     guild-scope is active will make commands appear in ALL guilds, and the
+ *     camp guilds will show duplicates until the next guild-scope deploy.
+ *
+ * Run:  npm run deploy            (guild-scope, instant)
+ *       npm run deploy:guild      (same)
+ *       npm run deploy:global     (global, optional)
  */
 const { REST, Routes } = require('discord.js');
 const fs = require('fs');
@@ -21,40 +29,52 @@ const CAMP_GUILDS = [
   { id: '1510358429183774910', name: 'PeaceX Hq' },
 ];
 
-const GUILD_ONLY = process.argv.includes('--guild-only');
+const IS_GLOBAL =
+  process.argv.includes('--global') || process.argv.includes('--pure-global');
+const IS_GUILD =
+  !IS_GLOBAL || process.argv.includes('--guild') || process.argv.includes('--guild-only');
 
 for (const line of fs.readFileSync(path.join(__dirname, '..', '.env'), 'utf8').split(/\r?\n/)) {
   const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
   if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
 }
 
-async function main() {
-  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
-  const commands = loadCommands();
-  const appId = process.env.CLIENT_ID;
-  if (!appId) throw new Error('CLIENT_ID not set in .env');
-
-  console.log(`[deploy] Loading ${commands.length} commands from src/commands/...`);
-
-  if (commands.length > 100) {
-    throw new Error(`Deploy aborted — ${commands.length} commands exceed Discord's 100 global command limit.`);
+function resolveGuilds() {
+  const names = new Map(CAMP_GUILDS.map((g) => [g.id, g.name]));
+  const ids = new Set(names.keys());
+  const dev = (process.env.DEV_GUILD_ID || '').trim();
+  if (dev) {
+    ids.add(dev);
+    if (!names.has(dev)) names.set(dev, 'Dev Guild');
   }
+  return [...ids].map((id) => ({ id, name: names.get(id) || id }));
+}
 
-  if (GUILD_ONLY) {
-    const memberGuilds = await rest.get('/users/@me/guilds');
-    const memberIds = new Set(memberGuilds.map((g) => g.id));
-    for (const g of CAMP_GUILDS) {
-      if (!memberIds.has(g.id)) {
-        console.warn(`[deploy] ⚠ Skipping "${g.name}" (${g.id}) - bot is not in this guild.`);
-        continue;
-      }
-      const stored = await rest.put(Routes.applicationGuildCommands(appId, g.id), { body: commands });
-      console.log(`[deploy] ➜ GUILD  "${g.name}" (${g.id}) -> ${stored.length} commands (instant).`);
+async function deployGuildScope(appId, rest, commands) {
+  // Clear globals so the guild copies are the ONLY ones —
+  // this is what guarantees "no duplicates".
+  await rest.put(Routes.applicationCommands(appId), { body: [] });
+  console.log('[deploy] ▼ Global commands cleared (single-scope, no duplicates).');
+
+  const memberGuilds = await rest.get('/users/@me/guilds');
+  const memberIds = new Set(memberGuilds.map((g) => g.id));
+  let allOk = true;
+
+  for (const g of resolveGuilds()) {
+    if (!memberIds.has(g.id)) {
+      console.warn(`[deploy] ⚠ Skipping "${g.name}" (${g.id}) - bot is not in this guild.`);
+      continue;
     }
-    console.log('[deploy] ✔ Guild-only deploy done.');
-    process.exit(0);
+    const stored = await rest.put(Routes.applicationGuildCommands(appId, g.id), { body: commands });
+    if (stored.length !== commands.length) allOk = false;
+    console.log(`[deploy] ➜ GUILD  "${g.name}" (${g.id}) -> ${stored.length} commands (instant).`);
   }
 
+  if (!allOk) throw new Error('Guild push count mismatch — some commands did not register.');
+  console.log('[deploy] ✔ Guild-scope deploy done.');
+}
+
+async function deployGlobal(appId, rest, commands) {
   const putResult = await rest.put(Routes.applicationCommands(appId), { body: commands });
   console.log(`[deploy] ➜ GLOBAL -> ${putResult.length} commands stored.`);
 
@@ -72,7 +92,7 @@ async function main() {
   }
   console.log(`[deploy] ✔ Verified: exactly ${stored.length} global commands, no duplicates.`);
 
-  // Wipe any stale guild-scoped commands.
+  // Wipe any stale guild-scoped commands so globals don't get shadowed.
   const guilds = await rest.get('/users/@me/guilds');
   for (const guild of guilds) {
     const guildCommands = await rest.get(Routes.applicationGuildCommands(appId, guild.id));
@@ -82,7 +102,26 @@ async function main() {
     }
   }
 
-  console.log('[deploy] ✔ Done. Single-scope global deploy — every command shows exactly ONCE.');
+  console.log('[deploy] ✔ Done. Global deploy — commands appear in every guild (up to 1h).');
+}
+
+async function main() {
+  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+  const commands = loadCommands();
+  const appId = process.env.CLIENT_ID;
+  if (!appId) throw new Error('CLIENT_ID not set in .env');
+
+  console.log(`[deploy] Loading ${commands.length} commands from src/commands/...`);
+
+  if (commands.length > 100) {
+    throw new Error(`Deploy aborted — ${commands.length} commands exceed Discord's 100 command limit.`);
+  }
+
+  if (IS_GUILD) {
+    await deployGuildScope(appId, rest, commands);
+  } else {
+    await deployGlobal(appId, rest, commands);
+  }
   process.exit(0);
 }
 
