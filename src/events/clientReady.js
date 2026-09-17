@@ -4,6 +4,7 @@
  * Rotates a music-focused presence alongside the tune the main bot used.
  */
 const { ActivityType } = require('discord.js');
+const vcTracker = require('../utils/vcTracker');
 
 function fmtCount(n) {
   n = Number(n) || 0;
@@ -38,5 +39,14 @@ module.exports = {
     };
     rotate();
     setInterval(rotate, 10_000);
+
+    // VC activity tracking: seed members already in voice, then schedule the
+    // weekly Sunday 11 PM owner report.
+    try {
+      vcTracker.seedActiveSessions(client);
+      vcTracker.startWeeklyReportScheduler(client);
+    } catch (err) {
+      console.error(`[PeaceX] [vcTracker] Failed to start: ${err.message}`);
+    }
   },
 };
