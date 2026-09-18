@@ -8,6 +8,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 const lyricsFinder = require('@flytri/lyrics-finder');
 
 module.exports = {
@@ -39,7 +40,7 @@ module.exports = {
       remaining = remaining.slice(4096);
       embeds.push(
         successEmbed({
-          title: embeds.length === 0 ? `🎵 ${track.title}` : undefined,
+          title: embeds.length === 0 ? `${E.music} ${track.title}` : undefined,
           description: chunk || ' ',
         })
       );

@@ -18,6 +18,7 @@ const store = require('./store');
 const { cleanTrackTitle } = require('./format');
 const { getPanelRequester, setPanelRequester, refreshPanel } = require('./nowPlaying');
 const { buildControlsPayload } = require('./controls');
+const { E } = require('../utils/emojis');
 
 // Pending track picks produced by /play (ephemeral select): userId -> payload.
 const picks = new Map();
@@ -56,7 +57,7 @@ async function enqueuePick(interaction, client, pending) {
 
   await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => {});
   const title = cleanTrackTitle(track.title);
-  await interaction.editReply(v2Error(`⏳ Starting **${title}**...`)).catch(() => {});
+  await interaction.editReply(v2Error(`${E.time} Starting **${title}**...`)).catch(() => {});
 
   // ── "add" mode: save to the user's global playlist (no playback) ──
   if (mode === 'add') {
@@ -68,7 +69,7 @@ async function enqueuePick(interaction, client, pending) {
     if (res.duplicate) {
       return interaction.editReply(v2Error(`**${title}** is already in your Liked playlist.`)).catch(() => {});
     }
-    return interaction.editReply(v2Error(`❤️ Added **${title}** to your Liked playlist.`)).catch(() => {});
+    return interaction.editReply(v2Error(`${E.LIKEBUTTON} Added **${title}** to your Liked playlist.`)).catch(() => {});
   }
 
   // ── "play" mode: enqueue & start ───────────────────────────────────
@@ -86,7 +87,7 @@ async function enqueuePick(interaction, client, pending) {
     );
     const queue = client.music.getQueue(interaction.guild.id);
     if (queue) setPanelRequester(interaction.guild.id, interaction.user.id);
-    await interaction.editReply(v2Error(`🎧 ${wasPlaying ? `Added to queue **${title}**` : `Now playing **${title}**`}`)).catch(() => {});
+    await interaction.editReply(v2Error(`${E.headsetORnowplaying} ${wasPlaying ? `Added to queue **${title}**` : `Now playing **${title}**`}`)).catch(() => {});
     const { postPanel } = require('./nowPlaying');
     postPanel(client, queue, queue?.metadata?.channel).catch(() => {});
     return;
@@ -146,7 +147,7 @@ async function handleMusicComponent(interaction, client) {
       if (client.music.isStayConnected(guildId) && !wasRadio) {
         // 24/7 enforces availability — the bot stays in the channel.
         return interaction
-          .followUp({ ...v2Msg('🔒 The bot is in **24/7 mode** — it stays connected. Only the bot owner can end it with `/24-7`.'), flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral })
+          .followUp({ ...v2Msg(`${E.lock} The bot is in **24/7 mode** — it stays connected. Only the bot owner can end it with \`/24-7\`.`), flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral })
           .catch(() => {});
       }
       client.music.stop(guildId);
@@ -231,10 +232,10 @@ async function handleMusicComponent(interaction, client) {
         url: t.url,
         duration: formatDurationSec(t.durationMS),
       });
-      label = res.duplicate ? `**${t.title}** is already in your Liked playlist.` : `❤️ Added **${t.title}** to your Liked playlist.`;
+      label = res.duplicate ? `**${t.title}** is already in your Liked playlist.` : `${E.LIKEBUTTON} Added **${t.title}** to your Liked playlist.`;
     } else {
       await store.removeTrack(userId, t.url);
-      label = `👎 Removed **${t.title}** from your Liked playlist.`;
+      label = `${E.DISLIKEBUTTON} Removed **${t.title}** from your Liked playlist.`;
     }
     await interaction.deferUpdate().catch(() => {});
     await interaction.followUp({ ...v2Msg(label), flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral }).catch(() => {});
@@ -324,7 +325,7 @@ function buildFiltersPayload(queue) {
   const container = new ContainerBuilder()
     .setAccentColor(0x353535)
     .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(current ? `🎚️ **Audio Filters** for **${current.title}**` : '🎚️ **Audio Filters**')
+      new TextDisplayBuilder().setContent(current ? `${E.audioFilter} **Audio Filters** for **${current.title}**` : `${E.audioFilter} **Audio Filters**`)
     )
     .addSeparatorComponents(new SeparatorBuilder())
     .addActionRowComponents(

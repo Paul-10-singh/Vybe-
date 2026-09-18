@@ -8,6 +8,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
 const { formatDuration } = require('../../music/format');
+const { E } = require('../../utils/emojis');
 
 module.exports = {
   data: new SlashCommandBuilder().setName('grab').setDescription('DM the current track to you'),
@@ -31,7 +32,7 @@ module.exports = {
           }),
         ],
       });
-      return reply(interaction, { embeds: [successEmbed({ description: '📩 Sent the track to your DMs.' })] });
+      return reply(interaction, { embeds: [successEmbed({ description: `${E.DMsend} Sent the track to your DMs.` })] });
     } catch {
       return reply(interaction, { embeds: [errorEmbed({ description: 'Could not send you a DM (DMs closed?).' })], ephemeral: true });
     }

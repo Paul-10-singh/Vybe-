@@ -18,6 +18,7 @@
  */
 const path = require('path');
 const fs = require('fs');
+const { E } = require('./emojis');
 
 const DATA_DIR = path.join(__dirname, '..', '..', 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -189,6 +190,15 @@ function getLiveSeconds(userId, guildId) {
   return joined == null ? 0 : (Date.now() - joined) / 1000;
 }
 
+/** Format seconds as `HH:MM:SS` (e.g. `10:20:36`). */
+function formatHMS(seconds) {
+  const s = Math.floor(Math.max(0, seconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
+
 /** { totalSeconds, dailyMap: { 'YYYY-MM-DD': seconds } } for a date range. */
 function getUserStats(userId, guildId, startDate, endDate) {
   if (db) {
@@ -245,20 +255,20 @@ function generateWeeklyReport(guild, daysOffset = 0) {
 
   const label = daysOffset === 0 ? 'THIS WEEK' : 'LAST WEEK';
   const lines = [
-    `📊 **WEEKLY VC ACTIVITY CHART (${label})**`,
-    `🗓️ Period: ${startDate} to ${endDate}`,
-    `🎯 Target Goal: ${WEEKLY_GOAL_HOURS} Hours`,
+    `${E.weeklychart} **WEEKLY VC ACTIVITY CHART (${label})**`,
+    `${E.period} Period: ${startDate} to ${endDate}`,
+    `${E.target} Target Goal: ${WEEKLY_GOAL_HOURS} Hours`,
     '```',
-    `${'Member'.padEnd(18)} | ${'Hours Spent'.padEnd(12)} | ${'Status'.padEnd(10)}`,
+    `${'Member'.padEnd(18)} | ${'Time Spent'.padEnd(12)} | ${'Status'.padEnd(10)}`,
     '-'.repeat(48),
   ];
 
   for (const [userId, totalSeconds] of rows) {
     const member = guild.members.cache.get(String(userId));
     const name = (member ? member.displayName : `User ${userId}`).slice(0, 16);
-    const hours = Math.round((totalSeconds / 3600) * 10) / 10;
-    const status = hours >= WEEKLY_GOAL_HOURS ? 'ACTIVE ✅' : 'INACTIVE ❌';
-    lines.push(`${name.padEnd(18)} | ${hours.toFixed(1).padEnd(12)} | ${status}`);
+    const timeStr = formatHMS(totalSeconds);
+    const status = totalSeconds >= WEEKLY_GOAL_HOURS * 3600 ? `ACTIVE ${E.correct}` : `INACTIVE ${E.wrong}`;
+    lines.push(`${name.padEnd(18)} | ${timeStr.padEnd(12)} | ${status}`);
   }
 
   lines.push('```');
@@ -298,7 +308,7 @@ function startWeeklyReportScheduler(client) {
       if (!owner) continue;
 
       const chart = generateWeeklyReport(guild, 0);
-      const chunks = splitMessage(`👑 **Sunday VC Activity Report for ${guild.name}**\n\n${chart}`);
+      const chunks = splitMessage(`${E.owner} **Sunday VC Activity Report for ${guild.name}**\n\n${chart}`);
       try {
         for (const chunk of chunks) await owner.send(chunk);
       } catch {
@@ -320,6 +330,7 @@ module.exports = {
   handleVoiceStateUpdate,
   seedActiveSessions,
   getLiveSeconds,
+  formatHMS,
   getUserStats,
   getGuildStats,
   generateWeeklyReport,

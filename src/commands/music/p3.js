@@ -5,13 +5,12 @@
  * /p3 - play "AV3" from the local library.
  */
 const { SlashCommandBuilder } = require('discord.js');
-const path = require('path');
-const { reply } = require('../../utils/helpers');
+const { reply, resolveLibTrack } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
 const { requireVoice } = require('../../music/voice');
 const { postPanel } = require('../../music/nowPlaying');
 
-const FILE = path.join(__dirname, '..', '..', 'music', 'lib', 'AV3.mp3');
+const FILE = resolveLibTrack('Av3');
 const NAME = 'AV3';
 
 module.exports = {
@@ -20,6 +19,9 @@ module.exports = {
     await interaction.deferReply();
     const vc = requireVoice(interaction, client);
     if (!vc.ok) return reply(interaction, vc.reply);
+    if (!FILE) {
+      return reply(interaction, { embeds: [errorEmbed({ description: `Local track **${NAME}** not found in the library.\nAdd a file named \`Av3.mp3\` under \`src/music/lib/\`` })], ephemeral: true });
+    }
 
     try {
       const music = client.music;

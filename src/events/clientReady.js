@@ -23,7 +23,7 @@ module.exports = {
   async execute(client) {
     const statuses = [
       () => `/play a song`,
-      () => `Peace music bot`,
+      () => `Developed by ${client.users.cache.get('264201574596057344')?.tag || 'Unknown#0000'}`,
       () => `Listening in ${client.guilds.cache.size} servers`,
       () => `Trusted By ${fmtCount(totalUsers(client))} Users`,
     ];

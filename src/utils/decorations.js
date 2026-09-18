@@ -16,6 +16,7 @@
  *  - Category-specific emoji icons in titles
  */
 const { EmbedBuilder } = require('discord.js');
+const { E } = require('./emojis');
 
 // --- Brand ---------------------------------------------------------------
 const BRAND = {
@@ -38,19 +39,19 @@ const BRAND = {
 // Module-level emoji icons shown in embed titles
 const MODULE_ICONS = {
   utility:    '🔧',
-  music:      '🎵',
+  music:      E.music,
   moderation: '🛡️',
-  security:   '🔒',
-  owner:      '👑',
+  security:   E.lock,
+  owner:      E.owner,
   default:    '✦',
 };
 
 // Animated status emoji
 const STATUS = {
-  SUCCESS: '<a:success_tick:1536133967709741086>',   // animated green tick
-  ERROR:   '<a:error_cross:1536133920989650989>',    // animated red cross
-  WARNING: '⚠️',
-  INFO:    '💠',
+  SUCCESS: E.correct,
+  ERROR:   E.wrong,
+  WARNING: E.warning,
+  INFO:    E.info,
   LOADING: '<a:loading:1534559000000000002>',        // animated spinner fallback
 };
 

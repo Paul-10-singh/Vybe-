@@ -13,6 +13,7 @@ const { commandEmbed, successEmbed, errorEmbed } = require('../../utils/decorati
 const { requireVoice } = require('../../music/voice');
 const { STATIONS, stationById } = require('../../music/stations');
 const { setPanelRequester } = require('../../music/nowPlaying');
+const { E } = require('../../utils/emojis');
 
 const STATION_CHOICES = STATIONS.map((s) => ({ name: `${s.name} (${s.codec})`, value: s.id }));
 
@@ -36,7 +37,7 @@ module.exports = {
       client.music.stop(guildId);
       client.music.leave(guildId);
       return reply(interaction, {
-        embeds: [successEmbed({ title: 'Radio stopped', description: '📻 Live radio turned off and I left the voice channel.' })],
+        embeds: [successEmbed({ title: 'Radio stopped', description: `${E.radio} Live radio turned off and I left the voice channel.` })],
       });
     }
 
@@ -62,7 +63,7 @@ module.exports = {
       return reply(interaction, {
         embeds: [
           commandEmbed({
-            title: '📻 Live Radio',
+            title: `${E.radio} Live Radio`,
             description:
               `**${station.name}** (${station.codec}) is now playing 24/7.\n` +
               `Run \`/radio\` again anytime to stop it.\n\n` +

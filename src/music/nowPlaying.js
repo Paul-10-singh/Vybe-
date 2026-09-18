@@ -24,6 +24,7 @@ const {
 const { QueueRepeatMode } = require('./player');
 const { formatDuration, cleanTrackTitle } = require('./format');
 const { renderCard } = require('./card');
+const { E } = require('../utils/emojis');
 
 // per-guild: { message, guildId, channelId, requesterId }
 const panels = new Map();
@@ -73,19 +74,19 @@ function filterSelect() {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId('music:filter')
-      .setPlaceholder('🎛️ Select Filter')
+      .setPlaceholder(`${E.audioFilter} Select Filter`)
       .addOptions([
-        { label: 'Reset Filters', value: 'off', emoji: '🔃' },
-        { label: 'BassBoost', value: 'bassboost', emoji: '🔊' },
+        { label: 'Reset Filters', value: 'off', emoji: E.Autoplay },
+        { label: 'BassBoost', value: 'bassboost', emoji: E.volumeup },
         { label: '8D', value: '8d', emoji: '🌀' },
-        { label: 'NightCore', value: 'nightcore', emoji: '🌙' },
-        { label: 'Lofi', value: 'lofi', emoji: '🎶' },
-        { label: 'Vaporwave', value: 'vaporwave', emoji: '✨' },
+        { label: 'NightCore', value: 'nightcore', emoji: E.nightmode },
+        { label: 'Lofi', value: 'lofi', emoji: E.music },
+        { label: 'Vaporwave', value: 'vaporwave', emoji: E.sparkles },
         { label: 'Slow', value: 'slow', emoji: '🐢' },
         { label: 'Tremolo', value: 'tremolo', emoji: '〰️' },
-        { label: 'Vibrato', value: 'vibrato', emoji: '🎵' },
-        { label: 'Surround', value: 'surround', emoji: '🔊' },
-        { label: 'Subboost', value: 'subboost', emoji: '🔋' },
+        { label: 'Vibrato', value: 'vibrato', emoji: E.music },
+        { label: 'Surround', value: 'surround', emoji: E.volumeup },
+        { label: 'Subboost', value: 'subboost', emoji: E.boost },
         { label: 'Karaoke', value: 'karaoke', emoji: '🎤' },
         { label: 'Mono', value: 'mono', emoji: '〽️' },
         { label: 'Normalizer', value: 'normalizer', emoji: '⚖️' },
@@ -95,9 +96,9 @@ function filterSelect() {
 }
 
 function loopEmoji(queue) {
-  if (queue?.repeatMode === QueueRepeatMode.TRACK) return '🔂';
-  if (queue?.repeatMode === QueueRepeatMode.QUEUE) return '🔁';
-  return '🔁';
+  if (queue?.repeatMode === QueueRepeatMode.TRACK) return E.loop;
+  if (queue?.repeatMode === QueueRepeatMode.QUEUE) return E.Repeat;
+  return E.Repeat;
 }
 
 /** Serialize Discord panel requests so rapid commands cannot race each other. */
@@ -131,7 +132,7 @@ async function buildPayload(client, queue) {
   const title = cleanTrackTitle(track.title);
 
   const loopIcon = loopEmoji(queue);
-  const paused = queue.node.isPaused() ? '⏸️ paused' : '▶️ playing';
+  const paused = queue.node.isPaused() ? `${E.pause} paused` : `${E.play} playing`;
   const volume = queue.node.volume ?? 70;
 
   const embed = new EmbedBuilder()
@@ -139,7 +140,7 @@ async function buildPayload(client, queue) {
     .setDescription(
       `[**${title}**](${track.url || '#'})${track.author ? ` — **${track.author}**` : ''}\n` +
         `\`${progress} / ${total}\` ${paused} ${loopIcon}\n` +
-        `🔊 Volume \`${volume}%\` · Requested by **${track.requestedBy || 'someone'}**`
+        `${E.volumeup} Volume \`${volume}%\` · Requested by **${track.requestedBy || 'someone'}**`
     )
     .setFooter({ text: `Peace✘ · ${track.url ? 'Music' : 'Local track'}` });
 

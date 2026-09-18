@@ -8,6 +8,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed, warningEmbed } = require('../../utils/decorations');
 const { clearPanel } = require('../../music/nowPlaying');
+const { E } = require('../../utils/emojis');
 
 module.exports = {
   data: new SlashCommandBuilder().setName('disconnect').setDescription('Disconnect the bot from the voice channel'),
@@ -19,7 +20,7 @@ module.exports = {
     if (client.music.isStayConnected(guildId)) {
       return reply(interaction, {
         embeds: [warningEmbed({
-          description: '🔒 The bot is in **24/7 mode** — it cannot be disconnected. Only the bot owner can end it with `/24-7`.',
+          description: `${E['247']} The bot is in **24/7 mode** — it cannot be disconnected. Only the bot owner can end it with `/24-7`.`,
         })],
         ephemeral: true,
       });

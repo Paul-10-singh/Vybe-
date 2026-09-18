@@ -15,6 +15,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildPresences,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.MessageContent,
@@ -87,7 +88,7 @@ client.once('clientReady', () => {
 client.login(process.env.DISCORD_TOKEN).catch((err) => {
   console.error(`${ANSI.red}[PeaceX] [×] Failed to log in: ${err.message}${ANSI.reset}`);
   if (/disallowed intents/i.test(err.message)) {
-    console.error('  This bot requests the "Server Members", "Message Content" and "Voice States" intents.');
+    console.error('  This bot requests the "Server Members", "Message Content", "Presence" and "Voice States" intents.');
     console.error('  Enable them in the Discord Developer Portal:');
     console.error('  https://discord.com/developers/applications -> your app -> Bot -> Privileged Gateway Intents');
   }

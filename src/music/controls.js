@@ -15,6 +15,7 @@
 const { EmbedBuilder, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
 const { QueueRepeatMode } = require('./player');
 const { renderCard } = require('./card');
+const { E } = require('../utils/emojis');
 const path = require('path');
 
 const FILTER_CHOICES = [
@@ -57,10 +58,10 @@ async function buildControlsPayload(queue, requesterTag) {
   }
 
   const embed = new EmbedBuilder()
-    .setTitle('🎵 Music Controls')
+    .setTitle(`${E.music} Music Controls`)
     .setDescription(
       `${current ? `**${current.title}**${current.author ? `\n${current.author}` : ''}` : 'Nothing is currently playing.'}\n` +
-      `\n▶️ **${paused ? 'Paused' : 'Playing'}** · 🔊 **${volume}%**\nRequested by **${requesterTag || 'someone'}**`
+      `\n${E.play} **${paused ? 'Paused' : 'Playing'}** · ${E.volumeup} **${volume}%**\nRequested by **${requesterTag || 'someone'}**`
     )
     .setImage(image)
     .setFooter({ text: 'Peace✘ Music · Use the controls below' });
@@ -73,9 +74,9 @@ async function buildControlsPayload(queue, requesterTag) {
       new ButtonBuilder().setCustomId('music:pro-stop').setLabel('Stop').setStyle(ButtonStyle.Danger)
     ),
     new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('music:vol-').setLabel('−10%').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId('music:mute').setEmoji('🔇').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId('music:vol+').setLabel('+10%').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId('music:vol-').setEmoji(E.volumedown).setLabel('−10%').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId('music:mute').setEmoji(E.mute).setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId('music:vol+').setEmoji(E.volumeup).setLabel('+10%').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId('music:repeat').setLabel(repeatLabel).setStyle(ButtonStyle.Secondary)
     ),
     new ActionRowBuilder().addComponents(

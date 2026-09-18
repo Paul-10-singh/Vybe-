@@ -7,6 +7,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 
 module.exports = {
   data: new SlashCommandBuilder().setName('clear').setDescription('Clear the music queue'),
@@ -20,6 +21,6 @@ module.exports = {
       return reply(interaction, { embeds: [errorEmbed({ description: 'The queue is already empty.' })] });
     }
     queue.tracks.clear();
-    return reply(interaction, { embeds: [successEmbed({ description: `🧹 Cleared **${count}** track(s) from the queue.` })] });
+    return reply(interaction, { embeds: [successEmbed({ description: `${E.clearqueue} Cleared **${count}** track(s) from the queue.` })] });
   },
 };

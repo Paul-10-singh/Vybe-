@@ -7,6 +7,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -36,6 +37,6 @@ module.exports = {
     const guild = interaction.guild.id;
     for (let i = 0; i < removeUpTo; i++) client.music.removeAt(guild, 0);
     queue.node.skip();
-    return reply(interaction, { embeds: [successEmbed({ description: `⏩ Skipped to **${target?.title || 'track'}**.` })] });
+    return reply(interaction, { embeds: [successEmbed({ description: `${E.next} Skipped to **${target?.title || 'track'}**.` })] });
   },
 };

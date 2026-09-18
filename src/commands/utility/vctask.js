@@ -5,6 +5,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { reply, chunkFieldValue } = require('../../utils/helpers');
 const { categoryEmbed } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 const vcTracker = require('../../utils/vcTracker');
 
 module.exports = {
@@ -42,8 +43,8 @@ module.exports = {
     rows.sort((a, b) => b.hours - a.hours);
 
     const lines = rows.map((r, i) => {
-      const status = r.hours >= vcTracker.WEEKLY_GOAL_HOURS ? '✅' : '❌';
-      return `\`${String(i + 1).padStart(2, '0')}\` <@${r.m.id}> — **${r.hours.toFixed(2)} hrs** ${status}`;
+      const status = r.hours >= vcTracker.WEEKLY_GOAL_HOURS ? E.correct : E.wrong;
+      return `\`${String(i + 1).padStart(2, '0')}\` <@${r.m.id}> — **${vcTracker.formatHMS(r.hours * 3600)}** ${status}`;
     });
 
     const embed = categoryEmbed('utility', {

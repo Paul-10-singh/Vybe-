@@ -8,6 +8,7 @@
  */
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { BRAND } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 const { reply } = require('../../utils/helpers');
 
 function formatUptime(ms) {
@@ -51,7 +52,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(BRAND.module)
-      .setTitle('Ping')
+      .setTitle(`${E.ping} Ping`)
       .setDescription(
         '```\n' +
           ['Latency   : ' + latency + ' ms', 'WebSocket : ' + ws + ' ms', 'Status    : ' + latencyStatus(latency)].join(

@@ -14,6 +14,7 @@ const { commandEmbed, successEmbed, errorEmbed } = require('../../utils/decorati
 const { requireVoice } = require('../../music/voice');
 const { postPanel } = require('../../music/nowPlaying');
 const store = require('../../music/store');
+const { E } = require('../../utils/emojis');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -42,7 +43,7 @@ module.exports = {
       case 'create': {
         if (!name) return reply(interaction, { embeds: [errorEmbed({ description: 'Name is required.' })] });
         if (store.isReserved(name)) {
-          return reply(interaction, { embeds: [errorEmbed({ description: '`liked` is your default playlist — you already have it (❤️ the songs you love).' })] });
+          return reply(interaction, { embeds: [errorEmbed({ description: `\`liked\` is your default playlist — you already have it (${E.LIKEBUTTON} the songs you love).` })] });
         }
         const res = await store.createPlaylist(userId, name);
         if (!res.ok) return reply(interaction, { embeds: [errorEmbed({ description: `You already have a playlist **${name}**.` })] });
@@ -76,9 +77,9 @@ module.exports = {
       case 'view': {
         const pls = (await store.listPlaylists(userId)) || [];
         const onlyDefault = pls.length === 1;
-        const lines = pls.map((p) => `• ${p.isDefault ? '❤️' : '📁'} **${p.label}** — ${p.tracks} ${p.tracks === 1 ? 'track' : 'tracks'}`);
+        const lines = pls.map((p) => `• ${p.isDefault ? E.LIKEBUTTON : E.folder} **${p.label}** — ${p.tracks} ${p.tracks === 1 ? 'track' : 'tracks'}`);
         if (pls.length === 0 || (onlyDefault && pls[0].tracks === 0)) {
-          return reply(interaction, { embeds: [errorEmbed({ description: 'No playlists yet. ❤️ a song from the playing card, or create one with `/playlist create`.' })] });
+          return reply(interaction, { embeds: [errorEmbed({ description: `No playlists yet. ${E.LIKEBUTTON} a song from the playing card, or create one with \`/playlist create\`.` })] });
         }
         return reply(interaction, { embeds: [commandEmbed({ title: 'Your Playlists', description: lines.join('\n') + '\n\nPlay one with `/playlist play <name>`.' })] });
       }

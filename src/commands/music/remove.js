@@ -8,6 +8,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -31,6 +32,6 @@ module.exports = {
     }
     const removed = arr[position - 1];
     client.music.removeAt(interaction.guild.id, position - 1);
-    return reply(interaction, { embeds: [successEmbed({ description: `🗑️ Removed **${removed?.title || 'track'}** from the queue.` })] });
+    return reply(interaction, { embeds: [successEmbed({ description: `${E.delete} Removed **${removed?.title || 'track'}** from the queue.` })] });
   },
 };

@@ -8,6 +8,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
 const { QueueRepeatMode } = require('../../music/player');
+const { E } = require('../../utils/emojis');
 
 const LABELS = {
   [QueueRepeatMode.OFF]: 'Off',
@@ -25,7 +26,7 @@ module.exports = {
     }
     const mode = client.music.cycleRepeat(interaction.guild.id);
     const label = LABELS[mode] ?? 'Off';
-    const icon = mode === QueueRepeatMode.TRACK ? '🔂' : mode === QueueRepeatMode.QUEUE ? '🔁' : '➡️';
+    const icon = mode === QueueRepeatMode.TRACK ? E.loop : mode === QueueRepeatMode.QUEUE ? E.Repeat : '➡️';
     return reply(interaction, { embeds: [successEmbed({ description: `${icon} Loop set to **${label}**.` })] });
   },
 };

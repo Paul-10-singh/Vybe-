@@ -55,6 +55,7 @@ const {
 
 const { sendLog } = require('../utils/logging');
 const { applyCredentials } = require('./dlconf');
+const { E } = require('../utils/emojis');
 
 // Load play-dl credentials (YouTube cookies etc.) before any streaming.
 // Ran without await so startup isn't blocked; failures are caught inside.
@@ -1120,7 +1121,7 @@ class MusicManager extends EventEmitter {
       fs.appendFileSync(file, `[${new Date().toISOString()}] [${guildId}] ${text}\n`);
     } catch {}
     if (!this.client) return;
-    sendLog(this.client, guildId, 'music', { content: `🎵 ${text}` }).catch(() => {});
+    sendLog(this.client, guildId, 'music', { content: `${E.music} ${text}` }).catch(() => {});
   }
 }
 

@@ -7,6 +7,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 
 const FILTERS = [
   { name: 'Off (clear)', value: 'off' },
@@ -44,13 +45,13 @@ module.exports = {
     const preset = interaction.options.getString('preset');
     if (preset === 'off') {
       client.music.clearFilters(interaction.guild.id);
-      return reply(interaction, { embeds: [successEmbed({ description: '🎚️ Filters cleared.' })] });
+      return reply(interaction, { embeds: [successEmbed({ description: `${E.audioFilter} Filters cleared.` })] });
     }
     const applied = client.music.setFilter(interaction.guild.id, preset);
     if (!applied) {
       return reply(interaction, { embeds: [errorEmbed({ description: `Unknown filter **${preset}**.` })] });
     }
     const name = FILTERS.find((f) => f.value === preset)?.name || preset;
-    return reply(interaction, { embeds: [successEmbed({ description: `🎚️ Applied **${name}**.` })] });
+    return reply(interaction, { embeds: [successEmbed({ description: `${E.audioFilter} Applied **${name}**.` })] });
   },
 };

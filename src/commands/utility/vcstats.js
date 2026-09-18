@@ -3,16 +3,15 @@
  * Developed by ACEtnc
  */
 const { SlashCommandBuilder } = require('discord.js');
-const { reply } = require('../../utils/helpers');
+const { reply, presenceStatus } = require('../../utils/helpers');
 const { categoryEmbed } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 const vcTracker = require('../../utils/vcTracker');
 
 function remainingText(hours) {
   const needed = vcTracker.WEEKLY_GOAL_HOURS - hours;
-  if (needed <= 0) return '✅ **0 hours** (Goal Met)';
-  const h = Math.floor(needed);
-  const m = Math.floor((needed - h) * 60);
-  return `⏳ **${h}h ${m}m needed** to become active`;
+  if (needed <= 0) return `${E.correct} **0 hours** (Goal Met)`;
+  return `${E.time} **${vcTracker.formatHMS(needed * 3600)} needed** to become active`;
 }
 
 module.exports = {
@@ -26,7 +25,7 @@ module.exports = {
   async execute(interaction, client) {
     await interaction.deferReply();
 
-    const member = interaction.options.getMember('member');
+    const member = interaction.options.getMember('member') || interaction.member;
     const target = member || interaction.options.getUser('member') || interaction.user;
     const guildId = interaction.guild.id;
 
@@ -35,23 +34,24 @@ module.exports = {
     const totalHours = (stats.totalSeconds + vcTracker.getLiveSeconds(target.id, guildId)) / 3600;
 
     const isActive = totalHours >= vcTracker.WEEKLY_GOAL_HOURS;
-    const statusStr = isActive ? '🟢 **ACTIVE** (Goal Completed! 🎉)' : '🔴 **INACTIVE**';
+    const statusStr = isActive
+    ? `${E.ACTIVEstatus} **ACTIVE** (Goal Completed! ${E.goalcompleted})`
+    : `${E.INACTIVEstatus} **INACTIVE**`;
 
     let breakdown = '';
     for (let i = 6; i >= 0; i--) {
       const date = vcTracker.daysAgoStr(i);
-      const hrs = Math.round(((stats.dailyMap[date] || 0) / 3600) * 10) / 10;
-      breakdown += `**${date}**: \`${hrs} hrs\`\n`;
+      breakdown += `**${date}**: \`${vcTracker.formatHMS(stats.dailyMap[date] || 0)}\`\n`;
     }
 
     const embed = categoryEmbed('utility', {
       title: `VC Stats: ${target.displayName || target.username}`,
       description: `**Period:** ${startDate} to ${endDate}`,
       fields: [
-        { name: 'Current VC Time', value: `\`${totalHours.toFixed(2)} hrs\``, inline: true },
+        { name: 'Current VC Time', value: `\`${vcTracker.formatHMS(totalHours * 3600)}\``, inline: true },
         { name: 'Target Goal', value: `\`${vcTracker.WEEKLY_GOAL_HOURS} hrs\``, inline: true },
         { name: 'Hours Needed to Complete', value: remainingText(totalHours), inline: false },
-        { name: 'Current Status', value: statusStr, inline: false },
+        { name: `${E.status} Current Status`, value: `${statusStr}\n• Discord: ${presenceStatus(member)}`, inline: false },
         { name: 'Daily Breakdown', value: breakdown, inline: false },
       ],
     });

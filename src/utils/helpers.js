@@ -3,6 +3,8 @@
  * Developed by ACEtnc
  */
 const { EmbedBuilder, MessageFlags } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
 const { BRAND, footer, MODULE_COLORS } = require('./decorations');
 
 // Brand palette (single source of truth: src/utils/decorations.js).
@@ -80,6 +82,36 @@ function formatDuration(millis) {
   return `${s}s`;
 }
 
+/** Resolve a track file in src/music/lib (case-insensitive, null if missing). */
+function resolveLibTrack(name) {
+  const dir = path.join(__dirname, '..', 'music', 'lib');
+  let files;
+  try {
+    files = fs.readdirSync(dir);
+  } catch {
+    return null;
+  }
+  const target = `${String(name).toLowerCase()}.mp3`;
+  const match = files.find((f) => f.toLowerCase() === target);
+  return match ? path.join(dir, match) : null;
+}
+
+/**
+ * Discord presence label for a guild member.
+ * Returns a colored dot + readable name (Online / Idle / Do Not Disturb / Invisible).
+ */
+function presenceStatus(member) {
+  const status = member?.presence?.status || 'offline';
+  const map = {
+    online:  { dot: '🟢', label: 'Online' },
+    idle:    { dot: '🟡', label: 'Idle' },
+    dnd:     { dot: '🔴', label: 'Do Not Disturb' },
+    offline: { dot: '⚫', label: 'Invisible' },
+  };
+  const entry = map[status] || map.offline;
+  return `${entry.dot} ${entry.label}`;
+}
+
 // Splits a list of lines into chunks that each fit inside an embed field value (1024 chars).
 function chunkFieldValue(lines, limit = 1024) {
   const chunks = [];
@@ -97,4 +129,4 @@ function chunkFieldValue(lines, limit = 1024) {
   return chunks;
 }
 
-module.exports = { COLORS, embedUser, reply, formatDuration, chunkFieldValue, footer };
+module.exports = { COLORS, embedUser, reply, formatDuration, presenceStatus, resolveLibTrack, chunkFieldValue, footer };

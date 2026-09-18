@@ -24,6 +24,7 @@
 const fs = require('fs');
 const path = require('path');
 const playdl = require('play-dl');
+const { E } = require('../utils/emojis');
 
 const ROOT = path.join(__dirname, '..', '..');
 
@@ -127,7 +128,7 @@ async function applyCredentials() {
     writeNetscapeCookies(ytCookieObj);
     applied.push(`YouTube cookies (${Object.keys(ytCookieObj).length} pairs)`);
   } else {
-    applied.push('YouTube cookies (⚠ none — streaming will fail)');
+    applied.push(`YouTube cookies (${E.warning} none — streaming will fail)`);
   }
 
   // ── SoundCloud ─────────────────────────────────────────────────────

@@ -7,6 +7,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 
 module.exports = {
   data: new SlashCommandBuilder().setName('pause').setDescription('Pause the music'),
@@ -19,6 +20,6 @@ module.exports = {
       return reply(interaction, { embeds: [errorEmbed({ description: 'Already paused.' })] });
     }
     queue.node.pause();
-    return reply(interaction, { embeds: [successEmbed({ description: 'Paused ⏸️' })] });
+    return reply(interaction, { embeds: [successEmbed({ description: `Paused ${E.pause}` })] });
   },
 };

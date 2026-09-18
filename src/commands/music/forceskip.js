@@ -7,6 +7,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 
 module.exports = {
   data: new SlashCommandBuilder().setName('forceskip').setDescription('Skip the current track (any user)'),
@@ -17,6 +18,6 @@ module.exports = {
     }
     const track = queue.currentTrack;
     queue.node.skip();
-    return reply(interaction, { embeds: [successEmbed({ description: `⏭️ Force-skipped **${track.title}**.` })] });
+    return reply(interaction, { embeds: [successEmbed({ description: `${E.skip} Force-skipped **${track.title}**.` })] });
   },
 };

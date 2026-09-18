@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -14,6 +15,6 @@ module.exports = {
     if (volume !== 1 && volume < 201) return reply(interaction, { embeds: [errorEmbed({ description: 'Use a booster value from **201** to **1000**, or **1** to turn it off.' })], ephemeral: true });
     const target = volume === 1 ? 70 : volume;
     client.music.setVolume(interaction.guild.id, target);
-    return reply(interaction, { embeds: [successEmbed({ description: volume === 1 ? 'Audio booster disabled.' : `Audio booster set to **${volume}%**.` })] });
+    return reply(interaction, { embeds: [successEmbed({ description: volume === 1 ? 'Audio booster disabled.' : `${E.boost} Audio booster set to **${volume}%**.` })] });
   },
 };

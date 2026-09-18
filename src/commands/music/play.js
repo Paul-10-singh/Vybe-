@@ -16,6 +16,7 @@ const { requireVoice } = require('../../music/voice');
 const { formatDuration, cleanTrackTitle } = require('../../music/format');
 const { postPanel, setPanelRequester } = require('../../music/nowPlaying');
 const { storePicks, v2Error } = require('../../music/interactions');
+const { E } = require('../../utils/emojis');
 
 const URL_RE = /^[a-z][a-z0-9+.-]*:\/\//i;
 
@@ -72,7 +73,7 @@ module.exports = {
         const dur = formatDuration(track.durationMS || first?.durationMS || 0);
         const c = new ContainerBuilder().setAccentColor(0x353535).addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `🎧 **${wasPlaying ? 'Added to queue' : 'Now playing'}**\n${cleanTrackTitle(track.title)}${track.author ? ` — ${track.author}` : ''}\n\`${dur}\``
+            `${E.headsetORnowplaying} **${wasPlaying ? 'Added to queue' : 'Now playing'}**\n${cleanTrackTitle(track.title)}${track.author ? ` — ${track.author}` : ''}\n\`${dur}\``
           )
         );
         if (queue) setPanelRequester(interaction.guild.id, userId);
@@ -101,7 +102,7 @@ module.exports = {
           tracks.map((t, i) => ({
             label: truncate(`${i + 1}. ${t.title}${t.author ? ` — ${t.author}` : ''}`, 100),
             value: String(i),
-            description: t.duration ? `⏱ ${t.duration}` : undefined,
+            description: t.duration ? `${E.timer} ${t.duration}` : undefined,
           }))
         );
 

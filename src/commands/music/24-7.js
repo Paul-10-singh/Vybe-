@@ -15,6 +15,7 @@ const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed, warningEmbed } = require('../../utils/decorations');
 const { requireVoice } = require('../../music/voice');
 const { isBotOwner } = require('../../utils/permissions');
+const { E } = require('../../utils/emojis');
 
 module.exports = {
   data: new SlashCommandBuilder().setName('24-7').setDescription('24/7 mode — keep the bot sitting in the voice channel'),
@@ -26,7 +27,7 @@ module.exports = {
     if (active) {
       if (!(await isBotOwner(interaction, client))) {
         return reply(interaction, {
-          embeds: [warningEmbed({ description: '🔒 The bot is in **24/7 mode** — only the bot owner can end it. Run `/24-7` to try. (You will be warned if you are not the owner.)' })],
+          embeds: [warningEmbed({ description: `${E['247']} The bot is in **24/7 mode** — only the bot owner can end it. Run \`/24-7\` to try. (You will be warned if you are not the owner.)` })],
           ephemeral: true,
         });
       }

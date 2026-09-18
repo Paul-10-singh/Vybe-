@@ -6,6 +6,7 @@ const { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder } = requi
 const { reply } = require('../../utils/helpers');
 const { canRunAny } = require('../../utils/permissions');
 const { helpEmbed, MODULE_COLORS, BRAND } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 
 const MODULE_LABELS = {
   utility: { emoji: '<a:setting:1537170658595708939>', label: 'Utility' },
@@ -78,7 +79,7 @@ function buildHomeEmbed(client, user, guild) {
 
   return helpEmbed({
     title: client.user.username,
-    description: `*${subtitle}*\n\n**Getting started**\nSelect a module below to browse its commands.\n\u200b\n• \`/help <command>\` — details for one command\n\n${links}`,
+    description: `*${subtitle}*\n\n**Getting started**\nSelect a module below to browse its commands.\n\u200b\n• ${E.question} \`/help <command>\` — details for one command\n\n${links}`,
     fields: [
       { name: '**Modules**', value: grid.length ? grid.join('\n') : 'No modules registered.', inline: false },
     ],
@@ -86,7 +87,7 @@ function buildHomeEmbed(client, user, guild) {
 }
 
 function buildModuleEmbed(client, folder, user, guild) {
-  const meta = MODULE_LABELS[folder] || { emoji: '📁', label: folder };
+  const meta = MODULE_LABELS[folder] || { emoji: E.folder, label: folder };
   const cmds = getModuleCommands(client, folder, user, guild);
   const embed = helpEmbed({
     title: `${meta.emoji ? `${meta.emoji} ` : ''}${client.user.username} · ${meta.label}`,

@@ -7,6 +7,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { reply } = require('../../utils/helpers');
 const { successEmbed, errorEmbed } = require('../../utils/decorations');
+const { E } = require('../../utils/emojis');
 
 module.exports = {
   data: new SlashCommandBuilder().setName('shuffle').setDescription('Shuffle the music queue'),
@@ -19,6 +20,6 @@ module.exports = {
       return reply(interaction, { embeds: [errorEmbed({ description: 'Nothing to shuffle in the queue.' })] });
     }
     queue.tracks.shuffle();
-    return reply(interaction, { embeds: [successEmbed({ description: 'Queue shuffled. 🔀' })] });
+    return reply(interaction, { embeds: [successEmbed({ description: `Queue shuffled. ${E.shuffle}` })] });
   },
 };
