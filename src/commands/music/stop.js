@@ -20,7 +20,7 @@ module.exports = {
     if (client.music.isStayConnected(guildId)) {
       return reply(interaction, {
         embeds: [warningEmbed({
-          description: `${E['247']} The bot is in **24/7 mode** — it stays connected to the voice channel.\nOnly the bot owner can end it with `/24-7`.`,
+          description: `${E['247']} The bot is in **24/7 mode** — it stays connected to the voice channel.\nOnly the bot owner can end it with \`/24-7\`.`,
         })],
         ephemeral: true,
       });
